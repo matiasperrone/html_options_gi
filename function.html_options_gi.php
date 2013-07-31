@@ -31,7 +31,8 @@
  * @param Smarty_Internal_Template $template template object
  * @return string
  * @uses smarty_function_escape_special_chars()
- * @version 1.0.1
+ * @version 1.1.0
+ * @since 2013-07-01
  */
 function smarty_function_html_options_gi($params, $template)
 {
@@ -44,11 +45,14 @@ function smarty_function_html_options_gi($params, $template)
     $output = null;
     $id = null;
     $class = null;
+    $data = null;
 
     $extra = '';
 
-    foreach ($params as $_key => $_val) {
-        switch ($_key) {
+    foreach ($params as $_key => $_val)
+    {
+        switch ($_key)
+        {
             case 'name':
             case 'class':
             case 'id':
@@ -59,6 +63,12 @@ function smarty_function_html_options_gi($params, $template)
 
             case 'options':
                 $options = (array) $_val;
+                break;
+
+            case 'data':
+                $data = json_decode($_val, true);
+                if (!$data)
+                	trigger_error("html_options_gi: data attribute contains incorrect JSON encoding", E_USER_NOTICE);
                 break;
 
             case 'selected':
@@ -110,11 +120,12 @@ function smarty_function_html_options_gi($params, $template)
 	{
 		if (is_array($row) And count($row))
 		{
-			$_html_result .= smarty_function_html_options_gi_optoutput($row[$values], $row[$output], $selected, $id, $class, $_idx);
+			$_html_result .= smarty_function_html_options_gi_optoutput($row, $values, $output, $selected, $data);
 		}
 	}
 
-    if (!empty($name)) {
+    if (!empty($name))
+    {
         $_html_class = !empty($class) ? ' class="'.$class.'"' : '';
         $_html_id = !empty($id) ? ' id="'.$id.'"' : '';
         $_html_result = '<select name="' . $name . '"' . $_html_class . $_html_id . $extra . '>' . "\n" . $_html_result . '</select>' . "\n";
@@ -123,43 +134,66 @@ function smarty_function_html_options_gi($params, $template)
     return $_html_result;
 }
 
-function smarty_function_html_options_gi_optoutput($key, $value, $selected, $id, $class, &$idx)
+function smarty_function_html_options_gi_optoutput($row, $value, $output, $selected, &$data)
 {
-    if (!is_array($value)) {
-        $_key = smarty_function_escape_special_chars($key);
-        $_html_result = '<option value="' . $_key . '"';
-        if (is_array($selected)) {
-            if (isset($selected[$_key])) {
+    if (!is_array($value))
+    {
+        $_html_result = '<option value="' . smarty_function_escape_special_chars($row[$value]) . '"';
+
+        if (is_array($selected))
+        {
+            if (array_key_exists($row[$value], $selected))
+            {
                 $_html_result .= ' selected="selected"';
             }
-        } elseif ($_key === $selected) {
+        }
+        elseif ($row[$value] === $selected)
+        {
             $_html_result .= ' selected="selected"';
         }
-        $_html_class = !empty($class) ? ' class="'.$class.' option"' : '';
-        $_html_id = !empty($id) ? ' id="'.$id.'-'.$idx.'"' : '';
-        if (is_object($value)) {
-            if (method_exists($value, "__toString")) {
-                $value = smarty_function_escape_special_chars((string) $value->__toString());
-            } else {
-                trigger_error("html_options_gi: value is an object of class '". get_class($value) ."' without __toString() method", E_USER_NOTICE);
+
+        if (is_array($data))
+        {
+        	foreach($data as $name => $field)
+        	{
+        		if (array_key_exists($field, $row))
+        		{
+           			$_html_result .= ' data-'.$name.'="'.smarty_function_escape_special_chars((string) $row[$field]).'"';
+        		}
+        	}
+        }
+
+        if (is_object($row[$output]))
+        {
+            if (method_exists($row[$output], "__toString"))
+            {
+                $output = (string) $row[$output]->__toString();
+            }
+            else
+            {
+                trigger_error("html_options_gi: value is an object of class '". get_class($row[$output]) ."' without __toString() method", E_USER_NOTICE);
                 return '';
             }
         }
-        $_html_result .= $_html_class . $_html_id . '>' . $value . '</option>' . "\n";
-        $idx++;
-    } else {
-        $_idx = 0;
-        $_html_result = smarty_function_html_options_gi_optgroup($key, $value, $selected, !empty($id) ? ($id.'-'.$idx) : null, $class, $_idx);
-        $idx++;
+        else
+        	$output = (string) $row[$output];
+
+        $output = smarty_function_escape_special_chars((string) $output);
+        $_html_result .= '>' . $output . '</option>' . "\n";
+    }
+    else
+    {
+        $_html_result = smarty_function_html_options_gi_optgroup($row, $value, $output, $selected, $data);
     }
     return $_html_result;
 }
 
-function smarty_function_html_options_gi_optgroup($key, $values, $selected, $id, $class, &$idx)
+function smarty_function_html_options_gi_optgroup(&$row, $value, $output, $selected, &$data)
 {
-    $optgroup_html = '<optgroup label="' . smarty_function_escape_special_chars($key) . '">' . "\n";
-    foreach ($values as $key => $value) {
-        $optgroup_html .= smarty_function_html_options_gi_optoutput($key, $value, $selected, $id, $class, $idx);
+    $optgroup_html = '<optgroup label="' . smarty_function_escape_special_chars($row[$value]) . '">' . "\n";
+    foreach ($row[$output] as $key => $value)
+    {
+        $optgroup_html .= smarty_function_html_options_gi_optoutput($row, $value, $output, $selected, $data);
     }
     $optgroup_html .= "</optgroup>\n";
     return $optgroup_html;
