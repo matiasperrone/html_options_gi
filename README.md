@@ -1,5 +1,5 @@
-html_options_gi
-===============
+html_options_gi - version 1.1
+=============================
 
 <b>html_options_gi</b> is a smarty plugin as alternative of html_options.<br/>
 Prints the list of &lt;option&gt; tags generated from a numeric / asociative array.
@@ -8,15 +8,16 @@ Prints the list of &lt;option&gt; tags generated from a numeric / asociative arr
 Parameters:
 ===========
 
-options    (required) - associative array.<br/>
-values     (required) - The key of the options array for the value in OPTION element.<br/>
-output     (required) - The key of the options array for the text in OPTION element.<br/>
-selected   (optional) - string or array (multiple selects), used to mark as "selected" the options.<br/>
-name       (optional) - If this parameter is set then creates a SELECT element with this name.<br/>
-id         (optional) - string default not set, used only if name is not empty.<br/>
-class      (optional) - string default not set, used only if name is not empty.<br/>
+options    (required) - associative array.
+values     (required) - The key of the options array for the value in OPTION element.
+output     (required) - The key of the options array for the text in OPTION element.
+selected   (optional) - string or array (multiple selects), used to mark as "selected" the options.
+name       (optional) - If this parameter is set then creates a SELECT element with this name.
+id         (optional) - string default not set, used only if name is not empty.
+class      (optional) - string default not set, used only if name is not empty.
 ?????      (optional) - string parameter added to the SELECT element.
 data       (optional) - string of JSON encoding of an object of "name": "field" used to add as "data-name" to the OPTION elements and populating with the value of "field".
+
 
 Examples
 ========
@@ -24,7 +25,7 @@ Examples
 Example of "currency" table as:
 <table>
 	<tr>
-		<td>currency_id</td><td>currency_sign</td><td>currency_iso</td><td>currency_name</td>
+		<th>currency_id</th><th>currency_sign</th><th>currency_iso</th><th>currency_name</td>
 	</tr>
 	<tr>
 		<td>1</td><td>$</td><td>ARS</td><td>Pesos ARS</td>
@@ -38,67 +39,63 @@ Example of "currency" table as:
 </table>
 
 Using PHP:
-<pre>
+```php
 // Assuming $smarty and $db already initialized
-
 $result = mysqli_query($db, "SELECT * FROM currency") or die();
 $data = array();
 while ($row = mysqli_fetch_assoc($result))
 	$data[] = $row;
-	
 $smarty->assingByRef('data', $data);
-</pre>
+```
 
-Example 1:
-==========
-<pre>
-&lt;select id=&quot;currency&quot; name=&quot;currency&quot; style=&quot;width: 67%; height: 30px; float: right;&quot; &gt;
-	&lt;option value=&quot;&quot;&gt;[Select a Currency]&lt;/option&gt;
+## Example 1:
+```html
+<select id="currency" name="currency" style="width: 67%; height: 30px; float: right;">
+	<option value="">[Select a Currency]</option>
 	{html_options_gi values="currency_id" output="currency_name" options=$data}
-&lt;/select&gt;
-</pre>
+</select>
+```
 
-# Result:
-<pre>
-&lt;select id=&quot;currency&quot; name=&quot;currency&quot; style=&quot;width: 67%; height: 30px; float: right;&quot;&gt;
-	&lt;option value=&quot;&quot;&gt;[Select a Currency]&lt;/option&gt;
-	&lt;option value=&quot;1&quot;&gt;Pesos ARS&lt;/option&gt;
-	&lt;option value=&quot;2&quot;&gt;US Dolars&lt;/option&gt;
-	&lt;option value=&quot;3&quot;&gt;Eurs&lt;/option&gt;
-&lt;/select&gt;
-</pre>
+### Result:
+```html
+<select id="currency" name="currency" style="width: 67%; height: 30px; float: right;">
+	<option value="">[Select a Currency]</option>
+	<option value="1">Pesos ARS</option>
+	<option value="2">US Dolars</option>
+	<option value="3">Eurs</option>
+</select>
+```
 
-Example 2:
-==========
+## Example 2:
 if "Select a Currency" is not necessary, and adding "style" as a parameter:
-<pre>
+```html
 {html_options_gi name="currency" id="currency" values="currency_id" output="currency_name"  options=$data style="width: 67%; height: 30px; float: right;"}
-</pre>
+```
 
-# Result:
-<pre>
-&lt;select id=&quot;currency&quot; name=&quot;currency&quot; style=&quot;width: 67%; height: 30px; float: right;&quot;&gt;
-	&lt;option value=&quot;1&quot;&gt;Pesos ARS&lt;/option&gt;
-	&lt;option value=&quot;2&quot;&gt;US Dolars&lt;/option&gt;
-	&lt;option value=&quot;3&quot;&gt;Eurs&lt;/option&gt;
-&lt;/select&gt;
-</pre>
+### Result:
+```html
+<select id="currency" name="currency" style="width: 67%; height: 30px; float: right;">
+	<option value="1">Pesos ARS</option>
+	<option value="2">US Dolars</option>
+	<option value="3">Eurs</option>
+</select>
+```
 
 Example 3:
 ==========
 if "Select a Currency" is not necessary, and adding "style" as a parameter and a "data" parameter:
-<pre>
+```html
 {html_options_gi name="currency" id="currency" values="currency_id" output="currency_name"  options=$data style="width: 67%; height: 30px; float: right;" data='{"iso":"currency_iso"}'}
-</pre>
+```
 
-# Result:
-<pre>
-&lt;select id=&quot;currency&quot; name=&quot;currency&quot; style=&quot;width: 67%; height: 30px; float: right;&quot;&gt;
-	&lt;option value=&quot;1&quot; data-iso=&quot;ARS&quot;&gt;Pesos ARS&lt;/option&gt;
-	&lt;option value=&quot;2&quot; data-iso=&quot;USD&quot;&gt;US Dolars&lt;/option&gt;
-	&lt;option value=&quot;3&quot; data-iso=&quot;EUR&quot;&gt;Eurs&lt;/option&gt;
-&lt;/select&gt;
-</pre>
+### Result:
+```html
+<select id="currency" name="currency" style="width: 67%; height: 30px; float: right;">
+	<option value="1" data-iso="ARS">Pesos ARS</option>
+	<option value="2" data-iso="USD">US Dolars</option>
+	<option value="3" data-iso="EUR">Eurs</option>
+</select>
+```
 
 
 
